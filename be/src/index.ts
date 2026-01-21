@@ -4,12 +4,14 @@ import express from "express";
 import { BASE_PROMPT, getSystemPrompt } from './prompts.js';
 import { basePrompt as reactBasePrompt } from './defaults/react.js';
 import { basePrompt as nodeBasePrompt } from './defaults/node.js';
+import cors from 'cors'
 
 dotenv.config()
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const app = express();
 app.use(express.json());
+app.use(cors())
 
 app.post('/template', async (req, res) => {
   const prompt = req.body.prompt;
@@ -64,7 +66,7 @@ app.post('/chat', async (req, res) => {
     top_p: 1,
     stop: null,
   })
-  console.log(response.choices[0]?.message.content);
+  // console.log(response.choices[0]?.message.content);
   res.json({})
 })
 
