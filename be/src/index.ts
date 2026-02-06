@@ -91,8 +91,9 @@ app.post('/chat', async (req, res) => {
   }
 })
 
-connectdb();
-
-app.listen('8000', () => {
-  console.log('server running');
-});
+connectdb()
+  .then(() => {
+    app.listen('8000', () => {
+      console.log('server running');
+    });
+  })

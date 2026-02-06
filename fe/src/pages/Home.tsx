@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wand2 } from 'lucide-react';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 export function Home() {
   const [prompt, setPrompt] = useState('');
@@ -44,6 +45,7 @@ export function Home() {
             </button>
           </div>
         </form>
+        <ProfileDropdown />
       </div>
     </div>
   );
