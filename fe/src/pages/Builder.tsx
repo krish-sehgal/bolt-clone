@@ -8,18 +8,10 @@ import { PreviewFrame } from '../components/PreviewFrame';
 import { type Step, type FileItem, StepType } from '../types';
 import axios from 'axios';
 import { parseXml } from '../steps';
-// import { useWebContainer } from '../hooks/useWebContainer';
 // import { FileNode } from '@webcontainer/api';
 import { Loader } from '../components/Loader.jsx';
-
-const MOCK_FILE_CONTENT = `// This is a sample file content
-import React from 'react';
-
-function Component() {
-  return <div>Hello World</div>;
-}
-
-export default Component;`;
+import { ArrowUp } from 'lucide-react';
+import useWebContainer from '../hooks/useWebContainer';
 
 export function Builder() {
     const location = useLocation();
@@ -28,20 +20,17 @@ export function Builder() {
     const [llmMessages, setLlmMessages] = useState<{ role: "user" | "assistant", content: string; }[]>([]);
     const [loading, setLoading] = useState(false);
     const [templateSet, setTemplateSet] = useState(false);
-    //   const webcontainer = useWebContainer();
-
+    const webcontainer = useWebContainer();
     const [currentStep, setCurrentStep] = useState(1);
     const [activeTab, setActiveTab] = useState<'code' | 'preview'>('code');
     const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
-
     const [steps, setSteps] = useState<Step[]>([]);
-
     const [files, setFiles] = useState<FileItem[]>([]);
 
     useEffect(() => {
         let originalFiles = [...files];
         let updateHappened = false;
-        steps.filter(({ status }) => status === "pending").map(step => {
+        steps.filter(({ status }) => status === "pending").forEach(step => {
             updateHappened = true;
             if (step?.type === StepType.CreateFile) {
                 let parsedPath = step.path?.split("/") ?? []; // ["src", "components", "App.tsx"]
@@ -98,22 +87,17 @@ export function Builder() {
 
             }))
         }
-        console.log(files);
     }, [steps, files]);
 
     useEffect(() => {
         const createMountStructure = (files: FileItem[]): Record<string, any> => {
             const mountStructure: Record<string, any> = {};
 
-            const processFile = (file: FileItem, isRootFolder: boolean) => {
+            const proccessFile = (file: FileItem, isRootFolder: boolean) => {
+
                 if (file.type === 'folder') {
-                    // For folders, create a directory entry
                     mountStructure[file.name] = {
-                        directory: file.children ?
-                            Object.fromEntries(
-                                file.children.map(child => [child.name, processFile(child, false)])
-                            )
-                            : {}
+                        directory: file.children ? Object.fromEntries(file.children.map(child => [child.name, proccessFile(child, false)])) : {}
                     };
                 } else if (file.type === 'file') {
                     if (isRootFolder) {
@@ -122,8 +106,8 @@ export function Builder() {
                                 contents: file.content || ''
                             }
                         };
-                    } else {
-                        // For files, create a file entry with contents
+                    }
+                    else {
                         return {
                             file: {
                                 contents: file.content || ''
@@ -131,27 +115,23 @@ export function Builder() {
                         };
                     }
                 }
-
                 return mountStructure[file.name];
             };
 
-            // Process each top-level file/folder
-            files.forEach(file => processFile(file, true));
-
+            files.forEach(file => proccessFile(file, true));
             return mountStructure;
         };
-
-        // const mountStructure = createMountStructure(files);
-
-        // Mount the structure if WebContainer is available
-        // console.log(mountStructure);
-        // webcontainer?.mount(mountStructure);
-    }, [files]);
+        const mountStructure = createMountStructure(files);
+        webcontainer?.mount(mountStructure)
+        console.log('structure mounted');
+    }, [files, webcontainer]);
 
     async function init() {
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/template`, {
-            prompt: prompt.trim()
-        });
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/template`, { prompt: prompt.trim() });
+        if (!response.data.success) {
+            console.error(`Error: ${response.data.message}`);
+            return;
+        }
         setTemplateSet(true);
 
         const { prompts, uiPrompts } = response.data;
@@ -190,16 +170,16 @@ export function Builder() {
 
     return (
         <div className="min-h-screen bg-gray-900 flex flex-col">
-            <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+            <header className="bg-gray-800 border-b border-gray-700 px-6 py-3">
                 <h1 className="text-xl font-semibold text-gray-100">Website Builder</h1>
                 <p className="text-sm text-gray-400 mt-1">Prompt: {prompt}</p>
             </header>
 
             <div className="flex-1 overflow-hidden">
-                <div className="h-full grid grid-cols-4 gap-6 p-6">
-                    <div className="col-span-1 space-y-6 overflow-auto">
+                <div className="h-full grid grid-cols-4 p-4">
+                    <div className=" space-y-6 overflow-auto">
                         <div>
-                            <div className="max-h-[75vh] overflow-scroll">
+                            <div className="max-h-[calc(100vh-180px)] overflow-y-scroll">
                                 <StepsList
                                     steps={steps}
                                     currentStep={currentStep}
@@ -208,55 +188,64 @@ export function Builder() {
                             </div>
                             <div>
                                 <div className='flex'>
-                                    <br />
-                                    {(loading || !templateSet) && <Loader />}
-                                    {!(loading || !templateSet) && <div className='flex'>
-                                        <textarea value={userPrompt} onChange={(e) => {
-                                            setPrompt(e.target.value)
-                                        }} className='p-2 w-full'></textarea>
-                                        <button onClick={async () => {
-                                            const newMessage = {
-                                                role: "user" as "user",
-                                                content: userPrompt
-                                            };
+                                    {!(loading || !templateSet) && <div className='relative w-full'>
+                                        <textarea
+                                            value={userPrompt}
+                                            onChange={(e) => {
+                                                setPrompt(e.target.value)
+                                            }}
+                                            className='pl-3 pr-5 py-2 w-full border border-gray-700 rounded-2xl text-white outline-none text-sm h-17 resize-none'
+                                            placeholder='Discribe the modifications in your website'>
+                                        </textarea>
+                                        <button
+                                            onClick={async () => {
+                                                const newMessage = {
+                                                    role: "user" as "user",
+                                                    content: userPrompt
+                                                };
 
-                                            setLoading(true);
-                                            const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/chat`, {
-                                                messages: [...llmMessages, newMessage]
-                                            });
-                                            setLoading(false);
+                                                setLoading(true);
+                                                const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/chat`, {
+                                                    messages: [...llmMessages, newMessage]
+                                                });
+                                                setLoading(false);
 
-                                            setLlmMessages(x => [...x, newMessage]);
-                                            setLlmMessages(x => [...x, {
-                                                role: "assistant",
-                                                content: stepsResponse.data.response
-                                            }]);
+                                                setLlmMessages(x => [...x, newMessage]);
+                                                setLlmMessages(x => [...x, {
+                                                    role: "assistant",
+                                                    content: stepsResponse.data.response
+                                                }]);
 
-                                            setSteps(s => [...s, ...parseXml(stepsResponse.data.response).map(x => ({
-                                                ...x,
-                                                status: "pending" as "pending"
-                                            }))]);
+                                                setSteps(s => [...s, ...parseXml(stepsResponse.data.response).map(x => ({
+                                                    ...x,
+                                                    status: "pending" as "pending"
+                                                }))]);
 
-                                        }} className='bg-purple-400 px-4'>Send</button>
+                                            }}
+                                            className='bg-purple-400 absolute bottom-4 right-3 w-7 h-7 rounded-2xl flex items-center justify-center text-sm text-white p-1 cursor-pointer'>
+                                            {(loading || !templateSet) ? (<Loader />) : (<ArrowUp />)}
+                                        </button>
                                     </div>}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="col-span-1">
-                        <FileExplorer
-                            files={files}
-                            onFileSelect={setSelectedFile}
-                        />
-                    </div>
-                    <div className="col-span-2 bg-gray-900 rounded-lg shadow-lg p-4 h-[calc(100vh-8rem)]">
-                        <TabView activeTab={activeTab} onTabChange={setActiveTab} />
-                        <div className="h-[calc(100%-4rem)]">
-                            {activeTab === 'code' ? (
-                                <CodeEditor file={selectedFile} />
-                            ) : (
-                                <PreviewFrame /*webContainer={webcontainer}*/ files={files} />
-                            )}
+                    <div className='flex bg-amber-400'>
+                        <div className=" max-h-[80vh]">
+                            <FileExplorer
+                                files={files}
+                                onFileSelect={setSelectedFile}
+                            />
+                        </div>
+                        <div className="col-span-2 bg-gray-900 p-2 h-[calc(100vh-7.5rem)]">
+                            <TabView activeTab={activeTab} onTabChange={setActiveTab} files={files} />
+                            <div className="h-[calc(100%-2rem)]">
+                                {activeTab === 'code' ? (
+                                    <CodeEditor file={selectedFile} />
+                                ) : (
+                                    <PreviewFrame webContainer={webcontainer!} />
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

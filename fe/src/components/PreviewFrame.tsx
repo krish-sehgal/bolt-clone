@@ -1,13 +1,57 @@
-
+import { useEffect, useState } from "react";
+import type { WebContainer } from "@webcontainer/api";
 
 interface PreviewFrameProps {
-  files: any;
+  webContainer: WebContainer;
 }
 
-export function PreviewFrame({ files }: PreviewFrameProps) {
+export function PreviewFrame({ webContainer }: PreviewFrameProps) {
+
+  const [url, setUrl] = useState("");
+  const [installProgress, setInstallProgress] = useState("");
+
+  async function main() {
+    try {
+      const installProcess = await webContainer.spawn('npm', ['install']);
+
+      installProcess.output.pipeTo(new WritableStream({
+        write(data) {
+          setInstallProgress(data);
+        }
+      }));
+
+      const exitCode = await installProcess.exit;
+
+      if (exitCode !== 0) {
+        console.error('Install failed with exit code:', exitCode);
+        return;
+      }
+
+      console.log('Install completed, starting dev server...');
+
+      await webContainer.spawn('npm', ['run', 'dev']);
+
+      webContainer.on('server-ready', (port, url) => {
+        console.log(url);
+        console.log(port);
+        setUrl(url);
+      })
+    } catch (error) {
+      console.log('error:', error);
+    }
+  }
+
+  useEffect(() => {
+    main()
+  }, [])
+
   return (
-    <div className="text-white">
-      hello World
+    <div className="h-full flex items-center justify-center text-gray-400">
+      {!url && <div className="text-center">
+        <p className="mb-2">Loading...</p>
+        <p className="text-sm text-gray-500">{installProgress}</p>
+      </div>}
+      {url && <iframe width={"100%"} height={"100%"} src={url} />}
     </div>
   )
 }

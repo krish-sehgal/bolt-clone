@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wand2 } from 'lucide-react';
-// import axios from "axios";
-// import { BACKEND_URL } from '../config';
 
 export function Home() {
   const [prompt, setPrompt] = useState('');
@@ -31,7 +29,7 @@ export function Home() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="rounded-lg px-6">
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
