@@ -1,7 +1,8 @@
 import { getAuth, signOut } from "firebase/auth";
 import { useState } from "react"
+import app from "../configs/firebase";
 
-const auth = getAuth();
+const auth = getAuth(app);
 
 async function handleLogout() {
     try {

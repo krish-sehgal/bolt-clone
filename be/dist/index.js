@@ -6,11 +6,13 @@ import { basePrompt as reactBasePrompt } from './defaults/react.js';
 import { basePrompt as nodeBasePrompt } from './defaults/node.js';
 import cors from 'cors';
 import connectdb from './config/db.js';
+import userRouter from './routers/userRoute.js';
 dotenv.config();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use('/api/user', userRouter);
 app.post('/template', async (req, res) => {
     const prompt = req.body.prompt;
     try {
@@ -81,8 +83,10 @@ app.post('/chat', async (req, res) => {
         });
     }
 });
-connectdb();
-app.listen('8000', () => {
-    console.log('server running');
+connectdb()
+    .then(() => {
+    app.listen('8000', () => {
+        console.log('server running');
+    });
 });
 //# sourceMappingURL=index.js.map
