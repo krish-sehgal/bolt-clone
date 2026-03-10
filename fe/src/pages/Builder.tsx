@@ -127,7 +127,7 @@ export function Builder() {
     }, [files, webcontainer]);
 
     async function init() {
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/template`, { prompt: prompt.trim() });
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/template`, { prompt: prompt.trim() });
         if (!response.data.success) {
             console.error(`Error: ${response.data.message}`);
             return;
@@ -142,7 +142,7 @@ export function Builder() {
         })));
 
         setLoading(true);
-        const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/chat`, {
+        const stepsResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/p/chat`, {
             messages: [...prompts, prompt].map(content => ({
                 role: "user",
                 content
