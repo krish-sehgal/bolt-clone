@@ -88,7 +88,8 @@ export async function loginUser(req: Request, res: Response) {
 
         res.json({
             success: true,
-            message: 'Logged in successfully'
+            message: 'Logged in successfully',
+            user: payload
         });
 
     } catch (error: any) {
@@ -97,4 +98,16 @@ export async function loginUser(req: Request, res: Response) {
             message: error.message || error || 'something went wrong'
         })
     }
+}
+
+export function logoutUser(req: Request, res: Response) {
+    res.clearCookie('token')
+    res.status(200).json({
+        success: true,
+        message: 'logged out successfully'
+    })
+}
+
+export function getMe(req: Request, res: Response) {
+    res.json({ success: true, user: req.user })
 }

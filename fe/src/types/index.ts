@@ -33,3 +33,8 @@ export interface FileViewerProps {
   file: FileItem | null;
   onClose: () => void;
 }
+
+export interface User {
+  _id: string;
+  email: string;
+}
