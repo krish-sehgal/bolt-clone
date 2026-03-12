@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wand2 } from 'lucide-react';
+import { Wand2, Zap } from 'lucide-react';
 import ProfileDropdown from '../components/ProfileDropdown';
 
 export function Home() {
@@ -15,37 +15,60 @@ export function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Wand2 className="w-12 h-12 text-blue-400" />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
+
+      {/* Profile dropdown — fixed to viewport top-right */}
+      <div className="fixed top-5 right-5 z-50">
+        <ProfileDropdown />
+      </div>
+
+      <div className="w-full max-w-xl">
+
+        {/* Hero */}
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="w-13 h-13 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center mb-5">
+            <Wand2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-100 mb-4">
+          <h1 className="text-3xl font-medium text-gray-900 dark:text-white mb-3">
             Website Builder AI
           </h1>
-          <p className="text-lg text-gray-300">
-            Describe your dream website, and we'll help you build it step by step
+          <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed">
+            Describe your dream website and we'll help you build it, step by step.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="rounded-lg px-6">
+        {/* Prompt card */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe the website you want to build..."
-              className="w-full h-32 p-4 bg-gray-900 text-gray-100 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none placeholder-gray-500"
+              placeholder="Describe the website you want to build... e.g. 'A portfolio for a photographer with a dark theme and gallery grid'"
+              className="w-full h-32 p-3.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 resize-none transition leading-relaxed"
             />
             <button
               type="submit"
-              className="w-full mt-4 bg-blue-600 text-gray-100 py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition"
             >
-              Generate Website Plan
+              <Zap className="w-4 h-4" />
+              Generate website plan
             </button>
-          </div>
-        </form>
-        <ProfileDropdown />
+          </form>
+        </div>
+
+        {/* Example prompt chips */}
+        <div className="flex flex-wrap justify-center gap-2 mt-4">
+          {["Portfolio site", "SaaS landing page", "E-commerce store", "Blog"].map((example) => (
+            <button
+              key={example}
+              onClick={() => setPrompt(`Build me a ${example.toLowerCase()}`)}
+              className="text-xs text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition bg-white dark:bg-gray-900"
+            >
+              {example}
+            </button>
+          ))}
+        </div>
+
       </div>
     </div>
   );
