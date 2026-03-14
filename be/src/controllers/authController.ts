@@ -34,7 +34,7 @@ export async function createUser(req: Request, res: Response) {
         res.cookie('token', token, {
             httpOnly: true,
             secure: true,
-            sameSite: 'strict'
+            sameSite: 'none'
         });
 
         return res.status(201).json({
@@ -83,7 +83,7 @@ export async function loginUser(req: Request, res: Response) {
         res.cookie('token', token, {
             httpOnly: true,
             secure: true,
-            sameSite: 'strict'
+            sameSite: 'none'
         });
 
         res.json({
